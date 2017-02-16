@@ -14,20 +14,15 @@ var task = function(request, callback){
 	var awsConfig = helpers.readJSONFile(AWS_CONFIG_FILE);
 	var policyData = helpers.readJSONFile(POLICY_FILE);
 	var hiddenFields = [];
-	var files = ["sd", "ds"];
-
+	var files = [];
 	var s3 = new AWS.S3();
-
 	//2. prepare policy
 	var policy = new Policy(policyData);
-
 	//3. generate form fields for S3 POST
 	var s3Form = new S3Form(policy);
 	//4. get bucket name
-
 	var bucket = policy.getConditionValueByKey("bucket");
 
-	
     policy.getConditions().push({ "x-amz-meta-uploader": request.connection.remoteAddress });
 	hiddenFields = s3Form.generateS3FormFields();
     hiddenFields = s3Form.addS3CredientalsFields(hiddenFields, awsConfig);
@@ -39,16 +34,14 @@ var task = function(request, callback){
 	s3.listObjects(params, function(err, data) {
 	if (err) {
 		console.log(err, err.stack); // an error occurred
-
-				callback(null, {template: INDEX_TEMPLATE, params:{
+	    callback(null, {template: INDEX_TEMPLATE, params:{
 		fields:hiddenFields, bucket:bucket, files:[{Key: "Error"}]
 		}});
 	}
 	else {
-		console.log("--------------------------------------------------------------------------------------------------");
+		console.log("-------success-------");
 		console.log(data);           // successful response
 		files = data.Contents;
-
 		callback(null, {template: INDEX_TEMPLATE, params:{
 		fields:hiddenFields, bucket:bucket, files:files
 		}});
